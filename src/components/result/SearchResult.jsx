@@ -1,12 +1,39 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import UseWeatherMain from '../../handling/weather/main/UseWeatherMain'
 import UseWeatherDesktop from '../../handling/weather/main/useWeatherDesktop'
-
-
-
+import { useWeather } from '../../Context/WeatherContext'
+import fetchWeather from '../../API/FetchWeather'
 
 
 const SearchResult = () => {
+  const { weatherData, setWeatherData } = useWeather();
+  const [error, setError] = useState(null);
+
+  const lat = weatherData?.coord?.lat;
+  const lon = weatherData?.coord?.lon;
+
+  useEffect(() => {
+    const fetchAndUpdateWeather = () => {
+      if (lat && lon) {
+        fetchWeather(lat, lon, setWeatherData, setError);
+      }
+    };
+
+    fetchAndUpdateWeather();
+
+    const intervalValue = setInterval(fetchAndUpdateWeather, 300000);
+
+    return () => clearInterval(intervalValue);
+  },[lat, lon, setWeatherData]);
+
+  if (error) {
+    return (<div className='text-accent text-xs flex flex-col gap-1 justify-center items-center mb-4'>
+      {error}
+      <button onClick={() => setError(null)} className='underline'>Try again</button>
+      </div>
+      )
+  }
+  
 
   return (
     <>
@@ -17,7 +44,6 @@ const SearchResult = () => {
       <UseWeatherDesktop />
     </div>
     </>
-  )
-}
+  )};
 
 export default SearchResult
